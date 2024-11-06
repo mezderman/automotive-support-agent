@@ -1,0 +1,3 @@
+Query: {query}
+
+Please provide a detailed response based on the car manual.

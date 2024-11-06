@@ -1,0 +1,5 @@
+# Ignore specific folders
+/chroma_db/
+/data/
+/venv/
+.env
