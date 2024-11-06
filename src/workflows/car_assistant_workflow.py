@@ -6,6 +6,7 @@ from src.agents.web_search_agent import WebSearchAgent
 from src.events.user_profile_event import UserProfileEvent
 from src.events.manual_search_event import ManualSearchEvent
 from src.events.generate_response_event import GenerateResponseEvent
+from src.events.retrieval_event import RetrieveEvent
 from llama_index.core.workflow import Context
 from src.events.web_search_event import WebSearchEvent
 from src.utils import load_prompt_template
@@ -27,17 +28,28 @@ class CarAssistantWorkflow(Workflow):
         return UserProfileEvent(user_profile=user_profile)
 
     @step
-    async def search_manual(self, ctx: Context, ev: UserProfileEvent) -> GenerateResponseEvent | ManualSearchEvent:
+    async def search_manual(self, ctx: Context, ev: UserProfileEvent) -> RetrieveEvent | ManualSearchEvent:
         query = await ctx.get("query")
-        manual_result = self.manual_agent.search_manual(query)
+        nodes = self.manual_agent.search_manual(query)
         
         # If a result is found in the manual, produce GenerateResponseEvent
-        if manual_result:
-            return GenerateResponseEvent(response=manual_result)
+        if nodes:
+            await ctx.set("retrieved_nodes", nodes)
+            return RetrieveEvent(retrieved_nodes=nodes)
         
         # Otherwise, produce ManualSearchEvent to continue the workflow
         return ManualSearchEvent(query=query)
 
+    @step
+    async def eval_retriever(self, ev: RetrieveEvent) -> GenerateResponseEvent :
+        docs = ""
+        nodes = ev.retrieved_nodes
+        # Iterate over the nodes with their index
+        for i, node in enumerate(nodes, start=1):
+        # Append the formatted text to the docs string
+            docs += f"DOC_{i}: {node.text}\n"
+        print(docs)
+        return GenerateResponseEvent(response=docs)
     @step
     async def search_web(self, ev: ManualSearchEvent) -> GenerateResponseEvent :
         web_results = self.web_search_agent.search_web(ev.query)

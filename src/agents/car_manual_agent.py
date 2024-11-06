@@ -11,6 +11,7 @@ from llama_index.core import (
 import chromadb
 from src.utils import load_prompt_template
 from llama_index.vector_stores.chroma import ChromaVectorStore
+from src.events.retrieval_event import RetrieveEvent
 
 
 class CarManualAgent:
@@ -64,17 +65,7 @@ class CarManualAgent:
 
     def search_manual(self, query):
         # Load and format the prompt template with the query
-        prompt = load_prompt_template("manual_query", query=query)
-        # # Execute the query and return the response
-        # response = self.query_engine.query(prompt)
         nodes = self.retriever.retrieve(query)
-        print("------------------")
-        response = ""
-
-        # Iterate over the nodes with their index
-        for i, node in enumerate(nodes, start=1):
-        # Append the formatted text to the response string
-            response += f"DOC_{i}: {node.text}\n"
-        
-        # print(response)
-        return str(response)
+       
+        # print(nodes)
+        return nodes
