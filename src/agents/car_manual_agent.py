@@ -31,7 +31,7 @@ class CarManualAgent:
 
         existing_collections = db.list_collections()
 
-        print(db.list_collections())
+        # print(db.list_collections())
 
         # Check if the desired collection exists
         if collection_name in [collection.name for collection in existing_collections]:

@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Car Assistant Chat</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-header">
+            <div class="user-info">
+                <img src="{{ url_for('static', filename='images/profile-pic.png') }}" alt="User Avatar" class="avatar">
+                <span class="username">James Reed</span>
+                <span class="status">Auto Specialist</span>
+            </div>
+        </div>
+        <div class="chat-history" id="chat-history"></div>
+        <div class="chat-input">
+            <input type="text" id="user-input" placeholder="Type your message..." autofocus>
+            <button onclick="sendMessage()">Send</button>
+        </div>
+    </div>
+
+    <script>
+        function addMessage(sender, message) {
+            const chatHistory = document.getElementById("chat-history");
+            const messageDiv = document.createElement("div");
+            messageDiv.className = sender === "user" ? "chat-bubble user" : "chat-bubble agent";
+
+            // Create the text and timestamp elements
+            const text = document.createElement("p");
+            text.className = "message-text";
+            text.innerText = message;
+
+            const timestamp = document.createElement("span");
+            timestamp.className = "timestamp";
+            timestamp.innerText = new Date().toLocaleTimeString();
+
+            messageDiv.appendChild(text);
+            messageDiv.appendChild(timestamp);
+
+            chatHistory.appendChild(messageDiv);
+            chatHistory.scrollTop = chatHistory.scrollHeight; // Auto-scroll
+        }
+
+        async function sendMessage() {
+            const userInput = document.getElementById("user-input");
+            const message = userInput.value;
+            if (message) {
+                addMessage("user", message);
+                const response = await fetch("/send_message", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({ message: message })
+                });
+
+                const data = await response.json();
+                if (data.response) {
+                    addMessage("agent", data.response);
+                }
+                userInput.value = ""; // Clear input field
+            }
+        }
+    </script>
+</body>
+</html>
