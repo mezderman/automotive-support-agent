@@ -1,22 +1,14 @@
-from openai import OpenAI
+from llama_index.llms.openai import OpenAI
+from llama_index.core.llms import ChatMessage
 import os
-
 
 class LLMAgent:
     def __init__(self):
-        # Set your OpenAI API key
-        self.client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-        self.model = "gpt-3.5-turbo"  # Use GPT-4 or other models if available
+        # Initialize the LLM client with llama_index's OpenAI wrapper
+        self.client = OpenAI(model="gpt-3.5-turbo", api_key=os.getenv("OPENAI_API_KEY"))
 
-    def respond_to_query(self, query):
-        response = self.client.chat.completions.create(
-            model=self.model,
-            messages=[
-                {"role": "user", "content": query}
-            ]
-        )
-        return response.choices[0].message.content
-        
-    
-    
-
+    async def respond_to_query(self, query):
+        # Convert the message to ChatMessage format
+        messages = [ChatMessage(role="user", content=query)]
+        response = await self.client.achat(messages=messages)
+        return response.message.content

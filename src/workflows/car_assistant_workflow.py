@@ -72,5 +72,5 @@ class CarAssistantWorkflow(Workflow):
         
         prompt = load_prompt_template("summary_template", documents=str(ev.response), query=query)
        
-        response = self.llm_agent.respond_to_query(prompt)
+        response = await self.llm_agent.respond_to_query(prompt)
         return StopEvent(result=response)
