@@ -9,7 +9,9 @@ from src.events.generate_response_event import GenerateResponseEvent
 from src.events.retrieval_event import RetrieveEvent
 from llama_index.core.workflow import Context
 from src.events.web_search_event import WebSearchEvent
-from src.utils import load_prompt_template
+
+from llama_index.core.llms import ChatMessage
+from llama_index.core.memory import ChatMemoryBuffer
 
 class CarAssistantWorkflow(Workflow):
     def __init__(self, **kwargs):
@@ -48,7 +50,6 @@ class CarAssistantWorkflow(Workflow):
         for i, node in enumerate(nodes, start=1):
         # Append the formatted text to the docs string
             docs += f"DOC_{i}: {node.text}\n"
-        print(docs)
         return GenerateResponseEvent(response=docs)
     @step
     async def search_web(self, ev: ManualSearchEvent) -> GenerateResponseEvent :
@@ -69,8 +70,7 @@ class CarAssistantWorkflow(Workflow):
         # If coming from WebSearchEvent, use LLM to generate the final response
         # Load and format the prompt template with the query
         query = await ctx.get("query")
-        
-        prompt = load_prompt_template("summary_template", documents=str(ev.response), query=query)
        
-        response = await self.llm_agent.respond_to_query(prompt)
+        response = await self.llm_agent.respond_to_query(str(ev.response), query)
+        
         return StopEvent(result=response)

@@ -66,6 +66,4 @@ class CarManualAgent:
     def search_manual(self, query):
         # Load and format the prompt template with the query
         nodes = self.retriever.retrieve(query)
-       
-        # print(nodes)
         return nodes
